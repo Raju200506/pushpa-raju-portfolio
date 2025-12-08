@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Download,
   Mail,
-  Linkedin,
+  Youtube,
   Instagram,
   Phone,
   Send,
@@ -48,20 +48,20 @@ const ContactSection = () => {
 
   const socialLinks = [
     {
-      icon: Linkedin,
-      href: "https://www.linkedin.com/in/pushpa-raju-adari",
-      label: "LinkedIn",
-      color: "hover:text-[#0077b5]",
+      icon: Youtube,
+      href: "https://youtube.com/@skill_store_official?si=Yfn_EwXmtF6BqeDB",
+      label: "YouTube",
+      color: "hover:text-[#FF0000]",
     },
     {
       icon: Instagram,
-      href: "https://instagram.com/pushparaju",
+      href: "https://www.instagram.com/skill_store_official?igsh=aW9sMnlyNXBsY3Uz",
       label: "Instagram",
       color: "hover:text-[#E4405F]",
     },
     {
       icon: Phone,
-      href: "tel:8639895359",
+      href: "tel:+918639895359",
       label: "Phone",
       color: "hover:text-green-500",
     },

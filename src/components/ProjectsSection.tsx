@@ -69,12 +69,13 @@ const ProjectCard = ({
       initial={{ opacity: 0, y: 50 }}
       animate={isInView ? { opacity: 1, y: 0 } : {}}
       transition={{ duration: 0.6, delay: 0.2 + index * 0.15 }}
-      className="group"
+      className="group cursor-pointer"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
         transform: `perspective(1000px) rotateX(${tilt.x}deg) rotateY(${tilt.y}deg)`,
-        transition: "transform 0.1s ease-out",
+        transition: "transform 0.15s ease-out",
+        transformStyle: "preserve-3d",
       }}
     >
       <div className="glass-card-hover p-6 h-full relative overflow-hidden">
