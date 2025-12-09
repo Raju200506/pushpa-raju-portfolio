@@ -98,6 +98,14 @@ const HeroSection = () => {
             >
               View Work
             </Button>
+            <motion.button
+              onClick={() => scrollToSection("#about")}
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors ml-2"
+            >
+              <ArrowDown size={20} />
+            </motion.button>
           </motion.div>
 
           {/* Stats */}
@@ -124,23 +132,6 @@ const HeroSection = () => {
           </motion.div>
         </div>
 
-        {/* Scroll Indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.2 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
-        >
-          <motion.button
-            onClick={() => scrollToSection("#about")}
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="flex flex-col items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
-          >
-            <span className="text-xs uppercase tracking-widest">Scroll</span>
-            <ArrowDown size={20} />
-          </motion.button>
-        </motion.div>
       </motion.div>
     </section>
   );
