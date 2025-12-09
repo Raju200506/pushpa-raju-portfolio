@@ -52,7 +52,7 @@ const Header = () => {
               scrollToSection("#home");
             }}
           >
-            <span className="text-foreground">Pushpa</span>{" "}
+            <span className="text-foreground">Pushpa Raju's</span>{" "}
             <span className="gradient-text">Portfolio</span>
           </motion.a>
 
