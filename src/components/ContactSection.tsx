@@ -1,101 +1,12 @@
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Download,
-  Mail,
-  Youtube,
-  Instagram,
-  Phone,
-  Send,
-  CheckCircle,
-} from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { Download, Youtube, Instagram } from "lucide-react";
 
 const ContactSection = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [inquiry, setInquiry] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const isValidEmail = (email: string) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!name.trim()) {
-      toast({
-        title: "Please enter your name",
-        description: "I'd love to know who I'm speaking with!",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!email.trim() || !isValidEmail(email)) {
-      toast({
-        title: "Please enter a valid email",
-        description: "I need your email to get back to you.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!inquiry.trim()) {
-      toast({
-        title: "Please enter your inquiry",
-        description: "The inquiry field cannot be empty.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (inquiry.length > 5000) {
-      toast({
-        title: "Message too long",
-        description: "Please keep your message under 5000 characters.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    try {
-      const { error } = await supabase.functions.invoke("send-contact-email", {
-        body: { message: inquiry.trim(), name: name.trim(), email: email.trim() },
-      });
-
-      if (error) throw error;
-
-      setIsSubmitted(true);
-      setName("");
-      setEmail("");
-      setInquiry("");
-      toast({
-        title: "Message sent!",
-        description: "Thanks for reaching out. I'll get back to you soon!",
-      });
-      setTimeout(() => setIsSubmitted(false), 3000);
-    } catch (error: any) {
-      console.error("Error sending message:", error);
-      toast({
-        title: "Failed to send message",
-        description: "Please try again or email me directly.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const socialLinks = [
     {
@@ -109,12 +20,6 @@ const ContactSection = () => {
       href: "https://www.instagram.com/skill_store_official?igsh=aW9sMnlyNXBsY3Uz",
       label: "Instagram",
       color: "hover:text-[#E4405F]",
-    },
-    {
-      icon: Phone,
-      href: "tel:+918639895359",
-      label: "Phone",
-      color: "hover:text-green-500",
     },
   ];
 
@@ -138,11 +43,10 @@ const ContactSection = () => {
             Get In Touch
           </span>
           <h2 className="font-display text-3xl md:text-5xl font-bold mt-3">
-            Let's Work Together
+            Let's Connect
           </h2>
           <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
-            Have a project in mind? I'd love to hear about it. Send me a message
-            and let's create something amazing.
+            Follow me on social media to see my latest work and updates.
           </p>
         </motion.div>
 
@@ -162,89 +66,17 @@ const ContactSection = () => {
             </Button>
           </motion.div>
 
-          {/* Contact Form */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.3 }}
-            className="glass-card p-8 rounded-2xl mb-12"
-          >
-            <h3 className="font-display text-xl font-semibold mb-6 text-center">
-              Creative Collaboration Inquiry
-            </h3>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <input
-                  type="text"
-                  placeholder="Your Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors placeholder:text-muted-foreground"
-                />
-                <input
-                  type="email"
-                  placeholder="Your Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors placeholder:text-muted-foreground"
-                />
-              </div>
-              <Textarea
-                placeholder="Tell me about your project idea, requirements, timeline, and how we can collaborate..."
-                value={inquiry}
-                onChange={(e) => setInquiry(e.target.value)}
-                className="min-h-[150px] bg-secondary/50 border-border/50 focus:border-primary/50 resize-none"
-              />
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button
-                  type="submit"
-                  variant="hero"
-                  size="lg"
-                  disabled={isSubmitting || isSubmitted}
-                  className="min-w-[180px]"
-                >
-                  {isSubmitted ? (
-                    <>
-                      <CheckCircle size={18} />
-                      Sent!
-                    </>
-                  ) : isSubmitting ? (
-                    <>
-                      <motion.div
-                        animate={{ rotate: 360 }}
-                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                        className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full"
-                      />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send size={18} />
-                      Send Message
-                    </>
-                  )}
-                </Button>
-                <Button variant="glass" size="lg" asChild>
-                  <a href="mailto:pushparaju200506@gmail.com">
-                    <Mail size={18} />
-                    Email Directly
-                  </a>
-                </Button>
-              </div>
-            </form>
-          </motion.div>
-
           {/* Social Links */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.4 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
             className="text-center"
           >
-            <p className="text-muted-foreground text-sm mb-4">
+            <p className="text-muted-foreground text-sm mb-6">
               Follow me on social media
             </p>
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center gap-6">
               {socialLinks.map((social, index) => (
                 <motion.a
                   key={social.label}
@@ -253,11 +85,12 @@ const ContactSection = () => {
                   rel="noopener noreferrer"
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={isInView ? { opacity: 1, scale: 1 } : {}}
-                  transition={{ duration: 0.4, delay: 0.5 + index * 0.1 }}
+                  transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
                   whileHover={{ scale: 1.1, y: -2 }}
-                  className={`p-3 glass-card rounded-xl ${social.color} transition-colors duration-300`}
+                  className={`p-4 glass-card rounded-xl ${social.color} transition-colors duration-300 flex items-center gap-3`}
                 >
-                  <social.icon size={24} />
+                  <social.icon size={28} />
+                  <span className="font-medium">{social.label}</span>
                 </motion.a>
               ))}
             </div>
