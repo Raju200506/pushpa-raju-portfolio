@@ -13,6 +13,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const ContactSection = () => {
   const ref = useRef(null);
@@ -21,7 +22,7 @@ const ContactSection = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!inquiry.trim()) {
       toast({
@@ -32,10 +33,24 @@ const ContactSection = () => {
       return;
     }
 
+    if (inquiry.length > 5000) {
+      toast({
+        title: "Message too long",
+        description: "Please keep your message under 5000 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
-    // Simulate submission
-    setTimeout(() => {
-      setIsSubmitting(false);
+    
+    try {
+      const { error } = await supabase.functions.invoke("send-contact-email", {
+        body: { message: inquiry.trim() },
+      });
+
+      if (error) throw error;
+
       setIsSubmitted(true);
       setInquiry("");
       toast({
@@ -43,7 +58,16 @@ const ContactSection = () => {
         description: "Thanks for reaching out. I'll get back to you soon!",
       });
       setTimeout(() => setIsSubmitted(false), 3000);
-    }, 1500);
+    } catch (error: any) {
+      console.error("Error sending message:", error);
+      toast({
+        title: "Failed to send message",
+        description: "Please try again or email me directly.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const socialLinks = [
