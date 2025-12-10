@@ -49,6 +49,30 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Validate name field
+    if (name && name.trim().length > 100) {
+      return new Response(
+        JSON.stringify({ error: "Name is too long (max 100 characters)" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Validate email field
+    if (email) {
+      if (email.length > 255) {
+        return new Response(
+          JSON.stringify({ error: "Email is too long (max 255 characters)" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return new Response(
+          JSON.stringify({ error: "Invalid email format" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     // Save to database
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
