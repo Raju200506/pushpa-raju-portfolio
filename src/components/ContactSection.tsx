@@ -18,12 +18,37 @@ import { supabase } from "@/integrations/supabase/client";
 const ContactSection = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [inquiry, setInquiry] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  const isValidEmail = (email: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!name.trim()) {
+      toast({
+        title: "Please enter your name",
+        description: "I'd love to know who I'm speaking with!",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!email.trim() || !isValidEmail(email)) {
+      toast({
+        title: "Please enter a valid email",
+        description: "I need your email to get back to you.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!inquiry.trim()) {
       toast({
         title: "Please enter your inquiry",
@@ -46,12 +71,14 @@ const ContactSection = () => {
     
     try {
       const { error } = await supabase.functions.invoke("send-contact-email", {
-        body: { message: inquiry.trim() },
+        body: { message: inquiry.trim(), name: name.trim(), email: email.trim() },
       });
 
       if (error) throw error;
 
       setIsSubmitted(true);
+      setName("");
+      setEmail("");
       setInquiry("");
       toast({
         title: "Message sent!",
@@ -145,7 +172,23 @@ const ContactSection = () => {
             <h3 className="font-display text-xl font-semibold mb-6 text-center">
               Creative Collaboration Inquiry
             </h3>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  placeholder="Your Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors placeholder:text-muted-foreground"
+                />
+                <input
+                  type="email"
+                  placeholder="Your Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl bg-secondary/50 border border-border/50 focus:border-primary/50 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-colors placeholder:text-muted-foreground"
+                />
+              </div>
               <Textarea
                 placeholder="Tell me about your project idea, requirements, timeline, and how we can collaborate..."
                 value={inquiry}
