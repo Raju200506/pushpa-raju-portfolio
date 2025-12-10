@@ -15,6 +15,16 @@ interface ContactRequest {
   email?: string;
 }
 
+// HTML entity encoding to prevent XSS in email templates
+const escapeHtml = (str: string): string => {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+};
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -56,19 +66,23 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    const safeName = name ? escapeHtml(name) : '';
+    const safeEmail = email ? escapeHtml(email) : '';
+    const safeMessage = escapeHtml(message);
+
     // Send email notification
     const emailResponse = await resend.emails.send({
       from: "Portfolio Contact <onboarding@resend.dev>",
       to: ["pushparaju200506@gmail.com"],
-      subject: `New Portfolio Inquiry${name ? ` from ${name}` : ""}`,
+      subject: `New Portfolio Inquiry${name ? ` from ${safeName}` : ""}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h2 style="color: #06b6d4;">New Portfolio Inquiry</h2>
-          ${name ? `<p><strong>Name:</strong> ${name}</p>` : ""}
-          ${email ? `<p><strong>Email:</strong> <a href="mailto:${email}">${email}</a></p>` : ""}
+          ${safeName ? `<p><strong>Name:</strong> ${safeName}</p>` : ""}
+          ${safeEmail ? `<p><strong>Email:</strong> <a href="mailto:${email}">${safeEmail}</a></p>` : ""}
           <div style="background: #f4f4f5; padding: 16px; border-radius: 8px; margin-top: 16px;">
             <p><strong>Message:</strong></p>
-            <p style="white-space: pre-wrap;">${message}</p>
+            <p style="white-space: pre-wrap;">${safeMessage}</p>
           </div>
           <p style="color: #71717a; font-size: 12px; margin-top: 24px;">
             Sent from your portfolio website
