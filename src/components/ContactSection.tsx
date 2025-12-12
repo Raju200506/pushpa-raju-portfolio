@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import { Download, Youtube, Instagram } from "lucide-react";
+import { Download, Youtube, Instagram, Mail } from "lucide-react";
 
 const ContactSection = () => {
   const ref = useRef(null);
@@ -46,18 +46,24 @@ const ContactSection = () => {
             Let's Connect
           </h2>
           <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
-            Follow me on social media to see my latest work and updates.
+            Have a project in mind? Reach out via email or follow me on social media.
           </p>
         </motion.div>
 
         <div className="max-w-3xl mx-auto">
-          {/* Resume Download */}
+          {/* Email & Resume */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-center mb-12"
+            className="flex flex-col sm:flex-row justify-center gap-4 mb-12"
           >
+            <Button variant="glow" size="lg" asChild>
+              <a href="mailto:pushparaju200506@gmail.com?subject=Project%20Inquiry&body=Hi%20Pushpa,%0A%0AI%20would%20like%20to%20discuss%20a%20project%20with%20you.%0A%0A">
+                <Mail size={18} />
+                Email Me
+              </a>
+            </Button>
             <Button variant="heroOutline" size="lg" asChild>
               <a href="/resume.pdf" download="Pushpa_Raju_Resume.pdf">
                 <Download size={18} />
