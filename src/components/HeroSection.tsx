@@ -1,35 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { motion, useScroll, useTransform, useMotionValue, useSpring } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowDown, Sparkles } from "lucide-react";
-import profileImage from "@/assets/profile.jpg";
-import { useRef } from "react";
 
 const HeroSection = () => {
   const { scrollY } = useScroll();
   const y = useTransform(scrollY, [0, 500], [0, 150]);
   const opacity = useTransform(scrollY, [0, 300], [1, 0]);
-
-  // Mouse tracking for parallax tilt
-  const profileRef = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
-  
-  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [15, -15]), { stiffness: 150, damping: 20 });
-  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-15, 15]), { stiffness: 150, damping: 20 });
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!profileRef.current) return;
-    const rect = profileRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
-    mouseX.set((e.clientX - centerX) / rect.width);
-    mouseY.set((e.clientY - centerY) / rect.height);
-  };
-
-  const handleMouseLeave = () => {
-    mouseX.set(0);
-    mouseY.set(0);
-  };
 
   const scrollToSection = (href: string) => {
     const element = document.querySelector(href);
@@ -56,75 +32,6 @@ const HeroSection = () => {
 
       <motion.div style={{ opacity }} className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Profile Image with Ring Effect */}
-          <motion.div
-            ref={profileRef}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={handleMouseLeave}
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-            style={{ 
-              rotateX, 
-              rotateY,
-              transformStyle: "preserve-3d",
-              perspective: 1000,
-            }}
-            className="relative w-40 h-40 md:w-52 md:h-52 mx-auto mb-8 cursor-pointer"
-          >
-            {/* Outer Glow Ring */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-[-8px] rounded-full"
-              style={{
-                background: "conic-gradient(from 0deg, hsl(var(--primary)), hsl(var(--accent)), hsl(var(--primary)/0.3), hsl(var(--primary)))",
-                filter: "blur(2px)",
-              }}
-            />
-            
-            {/* Inner Animated Ring */}
-            <motion.div
-              animate={{ rotate: -360 }}
-              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-              className="absolute inset-[-4px] rounded-full"
-              style={{
-                background: "conic-gradient(from 180deg, transparent, hsl(var(--primary)), transparent, hsl(var(--accent)), transparent)",
-              }}
-            />
-            
-            {/* Pulsing Glow */}
-            <motion.div
-              animate={{ 
-                boxShadow: [
-                  "0 0 20px 5px hsl(var(--primary)/0.3)",
-                  "0 0 40px 10px hsl(var(--primary)/0.5)",
-                  "0 0 20px 5px hsl(var(--primary)/0.3)",
-                ]
-              }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="absolute inset-0 rounded-full"
-            />
-            
-            {/* Image Container */}
-            <div className="absolute inset-[3px] rounded-full overflow-hidden bg-background border-2 border-primary/30">
-              <img 
-                src={profileImage} 
-                alt="Pushpa Raju"
-                className="w-full h-full object-cover object-top scale-110 translate-y-1"
-              />
-            </div>
-            
-            {/* Top Pop-out Effect Overlay */}
-            <div 
-              className="absolute inset-[3px] rounded-full pointer-events-none"
-              style={{
-                background: "linear-gradient(to bottom, transparent 60%, hsl(var(--background)) 100%)",
-                maskImage: "radial-gradient(circle, transparent 70%, black 100%)",
-              }}
-            />
-          </motion.div>
-
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
