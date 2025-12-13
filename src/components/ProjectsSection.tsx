@@ -1,7 +1,7 @@
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import { useInView } from "framer-motion";
-import { useRef } from "react";
-import { ExternalLink, Play, Image, Palette } from "lucide-react";
+import { useRef, useState } from "react";
+import { ExternalLink, Play, Image, Palette, X } from "lucide-react";
 
 // Import work images
 import samLogo from "@/assets/works/sam-logo.png";
@@ -73,14 +73,61 @@ const projects: Project[] = [
   },
 ];
 
+const ImageLightbox = ({
+  project,
+  onClose,
+}: {
+  project: Project;
+  onClose: () => void;
+}) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm p-4"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.8, opacity: 0 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="relative max-w-4xl w-full max-h-[90vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute -top-12 right-0 p-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <X size={24} />
+        </button>
+        <div className="glass-card overflow-hidden rounded-2xl">
+          <img
+            src={project.image}
+            alt={project.title}
+            className="w-full h-auto max-h-[80vh] object-contain"
+          />
+          <div className="p-4 text-center">
+            <h3 className="font-display text-xl font-semibold">{project.title}</h3>
+            <p className="text-muted-foreground text-sm mt-1">{project.category}</p>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
 const ProjectCard = ({
   project,
   index,
   isInView,
+  onViewDetails,
 }: {
   project: Project;
   index: number;
   isInView: boolean;
+  onViewDetails: (project: Project) => void;
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
@@ -112,6 +159,7 @@ const ProjectCard = ({
       className="group cursor-pointer"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onClick={() => onViewDetails(project)}
       style={{
         rotateX,
         rotateY,
@@ -162,55 +210,68 @@ const ProjectCard = ({
 const ProjectsSection = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   return (
-    <section id="projects" className="py-20 md:py-32 relative overflow-hidden">
-      {/* Background elements */}
-      <div className="absolute top-1/4 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
-      <div className="absolute bottom-1/4 right-0 w-72 h-72 bg-accent/5 rounded-full blur-3xl" />
+    <>
+      <section id="projects" className="py-20 md:py-32 relative overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute top-1/4 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-0 w-72 h-72 bg-accent/5 rounded-full blur-3xl" />
 
-      <div className="container mx-auto px-4 relative z-10" ref={ref}>
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
-          <span className="text-primary text-sm font-medium uppercase tracking-widest">
-            My Work
-          </span>
-          <h2 className="font-display text-3xl md:text-5xl font-bold mt-3">
-            Featured Projects
-          </h2>
-          <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
-            A showcase of my creative journey in logo design and thumbnail creation.
-          </p>
-        </motion.div>
+        <div className="container mx-auto px-4 relative z-10" ref={ref}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <span className="text-primary text-sm font-medium uppercase tracking-widest">
+              My Work
+            </span>
+            <h2 className="font-display text-3xl md:text-5xl font-bold mt-3">
+              Featured Projects
+            </h2>
+            <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
+              A showcase of my creative journey in logo design and thumbnail creation.
+            </p>
+          </motion.div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project, index) => (
-            <ProjectCard
-              key={project.id}
-              project={project}
-              index={index}
-              isInView={isInView}
-            />
-          ))}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((project, index) => (
+              <ProjectCard
+                key={project.id}
+                project={project}
+                index={index}
+                isInView={isInView}
+                onViewDetails={setSelectedProject}
+              />
+            ))}
+          </div>
+
+          {/* More Projects Coming Soon */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            className="text-center mt-12"
+          >
+            <p className="text-muted-foreground text-sm">
+              More projects coming soon...
+            </p>
+          </motion.div>
         </div>
+      </section>
 
-        {/* More Projects Coming Soon */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="text-center mt-12"
-        >
-          <p className="text-muted-foreground text-sm">
-            More projects coming soon...
-          </p>
-        </motion.div>
-      </div>
-    </section>
+      <AnimatePresence>
+        {selectedProject && (
+          <ImageLightbox
+            project={selectedProject}
+            onClose={() => setSelectedProject(null)}
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 
