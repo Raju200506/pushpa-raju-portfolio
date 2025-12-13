@@ -3,6 +3,13 @@ import { useInView } from "framer-motion";
 import { useRef } from "react";
 import { ExternalLink, Play, Image, Palette } from "lucide-react";
 
+// Import work images
+import samLogo from "@/assets/works/sam-logo.png";
+import thumbnail1 from "@/assets/works/thumbnail-1.jpg";
+import thumbnail2 from "@/assets/works/thumbnail-2.jpg";
+import thumbnail3 from "@/assets/works/thumbnail-3.jpg";
+import thumbnail4 from "@/assets/works/thumbnail-4.jpg";
+
 interface Project {
   id: number;
   title: string;
@@ -10,35 +17,59 @@ interface Project {
   description: string;
   icon: typeof Palette;
   gradient: string;
+  image: string;
 }
 
 const projects: Project[] = [
   {
     id: 1,
-    title: "Logo Design Portfolio",
+    title: "SAM Logo Design",
     category: "Logo Design",
     description:
-      "Collection of minimalist and modern logo designs for various brands and startups.",
+      "Modern logo design for Software Ammayi Muchatlu - clean illustration with bold typography.",
     icon: Palette,
     gradient: "from-primary to-accent",
+    image: samLogo,
   },
   {
     id: 2,
-    title: "Photo Retouching Work",
-    category: "Photo Editing",
+    title: "AI Agent Thumbnail",
+    category: "Thumbnail Design",
     description:
-      "Professional photo retouching and enhancement work showcasing color grading and restoration.",
+      "Eye-catching YouTube thumbnail featuring futuristic AI robot design with dynamic cityscape.",
     icon: Image,
     gradient: "from-accent to-primary",
+    image: thumbnail1,
   },
   {
     id: 3,
-    title: "Short Form Films",
-    category: "Video Editing",
+    title: "AI Agent Course Banner",
+    category: "Thumbnail Design",
     description:
-      "Creative short films and reels edited with professional transitions and effects.",
+      "Horizontal banner design for AI development course with vibrant colors and 3D elements.",
+    icon: Image,
+    gradient: "from-primary to-accent",
+    image: thumbnail2,
+  },
+  {
+    id: 4,
+    title: "Why I Stopped - Telugu",
+    category: "Thumbnail Design",
+    description:
+      "Engaging Telugu YouTube thumbnail with 3D character and dramatic text effects.",
+    icon: Play,
+    gradient: "from-accent to-primary",
+    image: thumbnail3,
+  },
+  {
+    id: 5,
+    title: "The Truth Behind YouTube",
+    category: "Thumbnail Design",
+    description:
+      "Thought-provoking thumbnail design with bilingual text and cinematic character styling.",
     icon: Play,
     gradient: "from-primary to-accent",
+    image: thumbnail4,
   },
 ];
 
@@ -88,49 +119,40 @@ const ProjectCard = ({
         perspective: 1000,
       }}
     >
-      <div className="glass-card-hover p-6 h-full relative overflow-hidden">
-        {/* Background gradient */}
-        <div
-          className={`absolute inset-0 bg-gradient-to-br ${project.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
-        />
-
-        {/* Icon */}
-        <div className="relative mb-6">
-          <div
-            className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${project.gradient} p-0.5`}
-          >
-            <div className="w-full h-full rounded-2xl bg-card flex items-center justify-center">
-              <project.icon className="w-6 h-6 text-primary" />
-            </div>
+      <div className="glass-card-hover h-full relative overflow-hidden rounded-2xl">
+        {/* Project Image */}
+        <div className="relative aspect-video overflow-hidden">
+          <img
+            src={project.image}
+            alt={project.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-transparent to-transparent opacity-60" />
+          
+          {/* Category Badge */}
+          <div className="absolute top-3 left-3">
+            <span className={`px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${project.gradient} text-background`}>
+              {project.category}
+            </span>
           </div>
         </div>
 
         {/* Content */}
-        <div className="relative">
-          <span className="text-primary text-xs font-medium uppercase tracking-wider">
-            {project.category}
-          </span>
-          <h3 className="font-display text-xl font-semibold mt-2 mb-3 group-hover:text-primary transition-colors">
+        <div className="p-5">
+          <h3 className="font-display text-lg font-semibold mb-2 group-hover:text-primary transition-colors">
             {project.title}
           </h3>
-          <p className="text-muted-foreground text-sm leading-relaxed">
+          <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2">
             {project.description}
           </p>
-        </div>
 
-        {/* View Project Link */}
-        <motion.div
-          className="mt-6 flex items-center gap-2 text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0"
-        >
-          <span>View Project</span>
-          <ExternalLink size={14} />
-        </motion.div>
-
-        {/* Corner decoration */}
-        <div className="absolute top-0 right-0 w-20 h-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-          <div
-            className={`absolute top-0 right-0 w-full h-full bg-gradient-to-bl ${project.gradient} opacity-10 rounded-bl-full`}
-          />
+          {/* View Project Link */}
+          <motion.div
+            className="mt-4 flex items-center gap-2 text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0"
+          >
+            <span>View Details</span>
+            <ExternalLink size={14} />
+          </motion.div>
         </div>
       </div>
     </motion.div>
@@ -161,8 +183,7 @@ const ProjectsSection = () => {
             Featured Projects
           </h2>
           <p className="text-muted-foreground mt-4 max-w-xl mx-auto">
-            A showcase of my creative journey in visual design and video
-            production.
+            A showcase of my creative journey in logo design and thumbnail creation.
           </p>
         </motion.div>
 
