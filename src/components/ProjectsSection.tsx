@@ -1,7 +1,7 @@
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import { useInView } from "framer-motion";
-import { useRef, useState } from "react";
-import { ExternalLink, Play, Image, Palette, X } from "lucide-react";
+import { useRef, useState, useCallback } from "react";
+import { ExternalLink, Play, Image, Palette, X, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
 
 // Import work images
 import samLogo from "@/assets/works/sam-logo.png";
@@ -80,6 +80,62 @@ const ImageLightbox = ({
   project: Project;
   onClose: () => void;
 }) => {
+  const [zoom, setZoom] = useState(1);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const imageRef = useRef<HTMLDivElement>(null);
+
+  const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.5, 4));
+  const handleZoomOut = () => {
+    setZoom((prev) => {
+      const newZoom = Math.max(prev - 0.5, 1);
+      if (newZoom === 1) setPosition({ x: 0, y: 0 });
+      return newZoom;
+    });
+  };
+  const handleReset = () => {
+    setZoom(1);
+    setPosition({ x: 0, y: 0 });
+  };
+
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    e.preventDefault();
+    if (e.deltaY < 0) {
+      setZoom((prev) => Math.min(prev + 0.2, 4));
+    } else {
+      setZoom((prev) => {
+        const newZoom = Math.max(prev - 0.2, 1);
+        if (newZoom === 1) setPosition({ x: 0, y: 0 });
+        return newZoom;
+      });
+    }
+  }, []);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (zoom > 1) {
+      setIsDragging(true);
+      setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDragging && zoom > 1) {
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y,
+      });
+    }
+  };
+
+  const handleMouseUp = () => setIsDragging(false);
+
+  const handleImageClick = () => {
+    if (zoom === 1) {
+      setZoom(2);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -87,6 +143,8 @@ const ImageLightbox = ({
       exit={{ opacity: 0 }}
       className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm p-4"
       onClick={onClose}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
     >
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
@@ -96,21 +154,66 @@ const ImageLightbox = ({
         className="relative max-w-4xl w-full max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
-          className="absolute -top-12 right-0 p-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <X size={24} />
-        </button>
+        {/* Controls */}
+        <div className="absolute -top-12 right-0 flex items-center gap-2">
+          <button
+            onClick={handleZoomOut}
+            className="p-2 text-muted-foreground hover:text-foreground transition-colors glass-card rounded-lg"
+            title="Zoom Out"
+          >
+            <ZoomOut size={20} />
+          </button>
+          <span className="text-muted-foreground text-sm min-w-[3rem] text-center">
+            {Math.round(zoom * 100)}%
+          </span>
+          <button
+            onClick={handleZoomIn}
+            className="p-2 text-muted-foreground hover:text-foreground transition-colors glass-card rounded-lg"
+            title="Zoom In"
+          >
+            <ZoomIn size={20} />
+          </button>
+          <button
+            onClick={handleReset}
+            className="p-2 text-muted-foreground hover:text-foreground transition-colors glass-card rounded-lg"
+            title="Reset"
+          >
+            <RotateCcw size={20} />
+          </button>
+          <button
+            onClick={onClose}
+            className="p-2 text-muted-foreground hover:text-foreground transition-colors glass-card rounded-lg"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
         <div className="glass-card overflow-hidden rounded-2xl">
-          <img
-            src={project.image}
-            alt={project.title}
-            className="w-full h-auto max-h-[80vh] object-contain"
-          />
+          <div
+            ref={imageRef}
+            className="relative overflow-hidden cursor-zoom-in"
+            style={{ cursor: zoom > 1 ? (isDragging ? "grabbing" : "grab") : "zoom-in" }}
+            onWheel={handleWheel}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onClick={handleImageClick}
+          >
+            <img
+              src={project.image}
+              alt={project.title}
+              className="w-full h-auto max-h-[70vh] object-contain transition-transform duration-200"
+              style={{
+                transform: `scale(${zoom}) translate(${position.x / zoom}px, ${position.y / zoom}px)`,
+              }}
+              draggable={false}
+            />
+          </div>
           <div className="p-4 text-center">
             <h3 className="font-display text-xl font-semibold">{project.title}</h3>
             <p className="text-muted-foreground text-sm mt-1">{project.category}</p>
+            <p className="text-muted-foreground/60 text-xs mt-2">
+              Click to zoom • Scroll to zoom • Drag to pan
+            </p>
           </div>
         </div>
       </motion.div>
