@@ -1,7 +1,7 @@
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import { useInView } from "framer-motion";
-import { useRef, useState, useCallback } from "react";
-import { ExternalLink, Play, Image, Palette, X, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { useRef, useState, useCallback, useEffect } from "react";
+import { ExternalLink, Play, Image, Palette, X, ZoomIn, ZoomOut, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
 
 // Import work images
 import samLogo from "@/assets/works/sam-logo.png";
@@ -76,9 +76,17 @@ const projects: Project[] = [
 const ImageLightbox = ({
   project,
   onClose,
+  onPrevious,
+  onNext,
+  currentIndex,
+  totalCount,
 }: {
   project: Project;
   onClose: () => void;
+  onPrevious: () => void;
+  onNext: () => void;
+  currentIndex: number;
+  totalCount: number;
 }) => {
   const [zoom, setZoom] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -136,6 +144,28 @@ const ImageLightbox = ({
     }
   };
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case "Escape":
+          onClose();
+          break;
+        case "ArrowLeft":
+          handleReset();
+          onPrevious();
+          break;
+        case "ArrowRight":
+          handleReset();
+          onNext();
+          break;
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, onPrevious, onNext]);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -154,6 +184,32 @@ const ImageLightbox = ({
         className="relative max-w-4xl w-full max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Left Arrow */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleReset();
+            onPrevious();
+          }}
+          className="absolute left-4 top-1/2 -translate-y-1/2 p-3 text-muted-foreground hover:text-foreground transition-colors glass-card rounded-full z-10"
+          title="Previous (←)"
+        >
+          <ChevronLeft size={24} />
+        </button>
+
+        {/* Right Arrow */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleReset();
+            onNext();
+          }}
+          className="absolute right-4 top-1/2 -translate-y-1/2 p-3 text-muted-foreground hover:text-foreground transition-colors glass-card rounded-full z-10"
+          title="Next (→)"
+        >
+          <ChevronRight size={24} />
+        </button>
+
         {/* Controls */}
         <div className="absolute -top-12 right-0 flex items-center gap-2">
           <button
@@ -210,9 +266,11 @@ const ImageLightbox = ({
           </div>
           <div className="p-4 text-center">
             <h3 className="font-display text-xl font-semibold">{project.title}</h3>
-            <p className="text-muted-foreground text-sm mt-1">{project.category}</p>
+            <p className="text-muted-foreground text-sm mt-1">
+              {project.category} • {currentIndex + 1} of {totalCount}
+            </p>
             <p className="text-muted-foreground/60 text-xs mt-2">
-              Click to zoom • Scroll to zoom • Drag to pan
+              ← → Navigate • Esc Close • Scroll to zoom • Drag to pan
             </p>
           </div>
         </div>
@@ -313,7 +371,21 @@ const ProjectCard = ({
 const ProjectsSection = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [selectedProjectIndex, setSelectedProjectIndex] = useState<number | null>(null);
+
+  const handlePrevious = useCallback(() => {
+    setSelectedProjectIndex((prev) => 
+      prev !== null ? (prev - 1 + projects.length) % projects.length : null
+    );
+  }, []);
+
+  const handleNext = useCallback(() => {
+    setSelectedProjectIndex((prev) => 
+      prev !== null ? (prev + 1) % projects.length : null
+    );
+  }, []);
+
+  const selectedProject = selectedProjectIndex !== null ? projects[selectedProjectIndex] : null;
 
   return (
     <>
@@ -347,7 +419,7 @@ const ProjectsSection = () => {
                 project={project}
                 index={index}
                 isInView={isInView}
-                onViewDetails={setSelectedProject}
+                onViewDetails={() => setSelectedProjectIndex(index)}
               />
             ))}
           </div>
@@ -367,10 +439,14 @@ const ProjectsSection = () => {
       </section>
 
       <AnimatePresence>
-        {selectedProject && (
+        {selectedProject && selectedProjectIndex !== null && (
           <ImageLightbox
             project={selectedProject}
-            onClose={() => setSelectedProject(null)}
+            onClose={() => setSelectedProjectIndex(null)}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            currentIndex={selectedProjectIndex}
+            totalCount={projects.length}
           />
         )}
       </AnimatePresence>
