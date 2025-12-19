@@ -93,6 +93,10 @@ const ImageLightbox = ({
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLDivElement>(null);
+  
+  // Touch swipe state
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [touchEnd, setTouchEnd] = useState<{ x: number; y: number } | null>(null);
 
   const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.5, 4));
   const handleZoomOut = () => {
@@ -144,6 +148,49 @@ const ImageLightbox = ({
     }
   };
 
+  // Touch swipe handlers
+  const minSwipeDistance = 50;
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (zoom > 1) return; // Disable swipe when zoomed
+    setTouchEnd(null);
+    setTouchStart({
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY,
+    });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (zoom > 1) return;
+    setTouchEnd({
+      x: e.targetTouches[0].clientX,
+      y: e.targetTouches[0].clientY,
+    });
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd || zoom > 1) return;
+    
+    const distanceX = touchStart.x - touchEnd.x;
+    const distanceY = touchStart.y - touchEnd.y;
+    const isHorizontalSwipe = Math.abs(distanceX) > Math.abs(distanceY);
+    
+    if (isHorizontalSwipe && Math.abs(distanceX) > minSwipeDistance) {
+      if (distanceX > 0) {
+        // Swipe left - go to next
+        handleReset();
+        onNext();
+      } else {
+        // Swipe right - go to previous
+        handleReset();
+        onPrevious();
+      }
+    }
+    
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -175,6 +222,9 @@ const ImageLightbox = ({
       onClick={onClose}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       <motion.div
         initial={{ scale: 0.8, opacity: 0 }}
@@ -270,7 +320,7 @@ const ImageLightbox = ({
               {project.category} • {currentIndex + 1} of {totalCount}
             </p>
             <p className="text-muted-foreground/60 text-xs mt-2">
-              ← → Navigate • Esc Close • Scroll to zoom • Drag to pan
+              ← → Navigate • Esc Close • Swipe to navigate • Scroll to zoom
             </p>
           </div>
         </div>
