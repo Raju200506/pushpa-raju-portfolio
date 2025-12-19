@@ -80,6 +80,8 @@ const ImageLightbox = ({
   onNext,
   currentIndex,
   totalCount,
+  allProjects,
+  onSelectProject,
 }: {
   project: Project;
   onClose: () => void;
@@ -87,12 +89,15 @@ const ImageLightbox = ({
   onNext: () => void;
   currentIndex: number;
   totalCount: number;
+  allProjects: Project[];
+  onSelectProject: (index: number) => void;
 }) => {
   const [zoom, setZoom] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const imageRef = useRef<HTMLDivElement>(null);
+  const thumbnailStripRef = useRef<HTMLDivElement>(null);
   
   // Touch swipe state
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
@@ -152,7 +157,7 @@ const ImageLightbox = ({
   const minSwipeDistance = 50;
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (zoom > 1) return; // Disable swipe when zoomed
+    if (zoom > 1) return;
     setTouchEnd(null);
     setTouchStart({
       x: e.targetTouches[0].clientX,
@@ -177,11 +182,9 @@ const ImageLightbox = ({
     
     if (isHorizontalSwipe && Math.abs(distanceX) > minSwipeDistance) {
       if (distanceX > 0) {
-        // Swipe left - go to next
         handleReset();
         onNext();
       } else {
-        // Swipe right - go to previous
         handleReset();
         onPrevious();
       }
@@ -190,6 +193,21 @@ const ImageLightbox = ({
     setTouchStart(null);
     setTouchEnd(null);
   };
+
+  const handleThumbnailClick = (index: number) => {
+    handleReset();
+    onSelectProject(index);
+  };
+
+  // Scroll active thumbnail into view
+  useEffect(() => {
+    if (thumbnailStripRef.current) {
+      const activeThumb = thumbnailStripRef.current.children[currentIndex] as HTMLElement;
+      if (activeThumb) {
+        activeThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+      }
+    }
+  }, [currentIndex]);
 
   // Keyboard navigation
   useEffect(() => {
@@ -218,7 +236,7 @@ const ImageLightbox = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-background/90 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/90 backdrop-blur-sm p-4"
       onClick={onClose}
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
@@ -231,7 +249,7 @@ const ImageLightbox = ({
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.8, opacity: 0 }}
         transition={{ type: "spring", damping: 25, stiffness: 300 }}
-        className="relative max-w-4xl w-full max-h-[90vh]"
+        className="relative max-w-4xl w-full max-h-[80vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Left Arrow */}
@@ -307,7 +325,7 @@ const ImageLightbox = ({
             <img
               src={project.image}
               alt={project.title}
-              className="w-full h-auto max-h-[70vh] object-contain transition-transform duration-200"
+              className="w-full h-auto max-h-[60vh] object-contain transition-transform duration-200"
               style={{
                 transform: `scale(${zoom}) translate(${position.x / zoom}px, ${position.y / zoom}px)`,
               }}
@@ -319,11 +337,45 @@ const ImageLightbox = ({
             <p className="text-muted-foreground text-sm mt-1">
               {project.category} • {currentIndex + 1} of {totalCount}
             </p>
-            <p className="text-muted-foreground/60 text-xs mt-2">
-              ← → Navigate • Esc Close • Swipe to navigate • Scroll to zoom
-            </p>
           </div>
         </div>
+      </motion.div>
+
+      {/* Thumbnail Strip */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: 20 }}
+        transition={{ delay: 0.1 }}
+        className="mt-4 max-w-4xl w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          ref={thumbnailStripRef}
+          className="flex gap-2 overflow-x-auto py-2 px-1 scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent"
+        >
+          {allProjects.map((proj, index) => (
+            <button
+              key={proj.id}
+              onClick={() => handleThumbnailClick(index)}
+              className={`flex-shrink-0 relative rounded-lg overflow-hidden transition-all duration-200 ${
+                index === currentIndex
+                  ? "ring-2 ring-primary ring-offset-2 ring-offset-background scale-105"
+                  : "opacity-60 hover:opacity-100"
+              }`}
+            >
+              <img
+                src={proj.image}
+                alt={proj.title}
+                className="w-16 h-12 md:w-20 md:h-14 object-cover"
+                draggable={false}
+              />
+            </button>
+          ))}
+        </div>
+        <p className="text-muted-foreground/60 text-xs text-center mt-2">
+          ← → Navigate • Esc Close • Swipe or click thumbnails
+        </p>
       </motion.div>
     </motion.div>
   );
@@ -497,6 +549,8 @@ const ProjectsSection = () => {
             onNext={handleNext}
             currentIndex={selectedProjectIndex}
             totalCount={projects.length}
+            allProjects={projects}
+            onSelectProject={setSelectedProjectIndex}
           />
         )}
       </AnimatePresence>
