@@ -196,3 +196,7 @@
     animation-delay: 600ms;
   }
 }
+
+#lovable-badge {
+  display: none !important;
+}
